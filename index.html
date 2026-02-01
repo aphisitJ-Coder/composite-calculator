@@ -123,7 +123,7 @@ function calculate() {
 
     // Validation
     if (Math.abs(lat1) > 90 || Math.abs(lat2) > 90 || Math.abs(latL) > 90) return showError("ละติจูดต้องไม่เกิน 90 องศา");
-    if (Math.abs(latL) <= Math.abs(lat1) || Math.abs(latL) <= Math.abs(lat2)) return showError("Limit Lat ต้องอยู่สูงกว่า Lat เริ่มต้นและสิ้นสุด");
+    if (Math.abs(latL) < Math.abs(lat1) || Math.abs(latL) < Math.abs(lat2)) return showError("Limit Lat ต้องอยู่สูงกว่า Lat เริ่มต้นและสิ้นสุด");
 
     const rLat1 = toRad(lat1), rLat2 = toRad(lat2), rLatL = toRad(latL);
     
@@ -173,3 +173,4 @@ function calculate() {
 </script>
 </body>
 </html>
+
