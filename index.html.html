@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Sailing - Online Tools</title>
+    <style>
+        :root { --primary: #2c3e50; --blue: #3498db; --red: #e74c3c; --bg: #f4f7f6; --green: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 600px; padding: 25px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; border-bottom: 3px solid var(--blue); padding-bottom: 10px; margin-top: 0; }
+        .group { margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 8px; position: relative; }
+        .group-title { font-weight: bold; color: var(--blue); margin-bottom: 8px; display: block; font-size: 0.9em; }
+        .row { display: flex; align-items: center; margin-bottom: 8px; }
+        .row label { flex: 1; font-size: 0.85em; font-weight: 600; }
+        .inputs { display: flex; gap: 5px; align-items: center; }
+        input { width: 55px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { flex: 2; padding: 12px; border: none; border-radius: 6px; font-size: 1em; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-calc { background: var(--blue); }
+        .btn-calc:hover { background: #2980b9; }
+        .btn-clear { background: #95a5a6; flex: 1; }
+        .btn-clear:hover { background: #7f8c8d; }
+
+        #results { margin-top: 20px; display: none; border-top: 2px solid #eee; padding-top: 15px; }
+        .res-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.95em; }
+        .res-val { font-weight: bold; color: var(--red); text-align: right; }
+        .quad-text { font-size: 0.85em; color: #7f8c8d; font-weight: normal; display: block; margin-top: 2px; }
+        .error-msg { color: var(--red); text-align: center; display: none; font-size: 0.85em; margin-top: 10px; font-weight: bold; padding: 10px; background: #fdeaea; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🚢 Composite Sailing</h2>
+
+    <div id="error" class="error-msg"></div>
+
+    <div class="group">
+        <span class="group-title">Departure (A)</span>
+        <div class="row"><label>Lat:</label><div class="inputs"><input type="number" id="lat1_d" placeholder="0">° <input type="number" id="lat1_m" placeholder="0">' <select id="lat1_s"><option value="1">N</option><option value="-1">S</option></select></div></div>
+        <div class="row"><label>Long:</label><div class="inputs"><input type="number" id="lon1_d" placeholder="0">° <input type="number" id="lon1_m" placeholder="0">' <select id="lon1_s"><option value="1">E</option><option value="-1">W</option></select></div></div>
+    </div>
+
+    <div class="group">
+        <span class="group-title">Arrival (B)</span>
+        <div class="row"><label>Lat:</label><div class="inputs"><input type="number" id="lat2_d" placeholder="0">° <input type="number" id="lat2_m" placeholder="0">' <select id="lat2_s"><option value="1">N</option><option value="-1">S</option></select></div></div>
+        <div class="row"><label>Long:</label><div class="inputs"><input type="number" id="lon2_d" placeholder="0">° <input type="number" id="lon2_m" placeholder="0">' <select id="lon2_s"><option value="1">E</option><option value="-1">W</option></select></div></div>
+    </div>
+
+    <div class="group">
+        <span class="group-title">Limit Latitude</span>
+        <div class="row"><label>Max Lat:</label><div class="inputs"><input type="number" id="latLim_d" placeholder="0">° <input type="number" id="latLim_m" placeholder="0">' <select id="latLim_s"><option value="1">N</option><option value="-1">S</option></select></div></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculate()">Calculate</button>
+        <button class="btn-clear" onclick="clearData()">Clear</button>
+    </div>
+
+    <div id="results">
+        <div class="res-item"><span>Initial Course:</span> <span class="res-val" id="res_ic">-</span></div>
+        <div class="res-item"><span>Final Course:</span> <span class="res-val" id="res_fc">-</span></div>
+        <div class="res-item"><span>Dlong AB (Total):</span> <span class="res-val" id="res_dloAB">-</span></div>
+        <div class="res-item"><span>Dlong AV₁:</span> <span class="res-val" id="res_dloAV1">-</span></div>
+        <div class="res-item"><span>Dlong V₁V₂:</span> <span class="res-val" id="res_dloV1V2">-</span></div>
+        <div class="res-item"><span>Dlong V₂B:</span> <span class="res-val" id="res_dloV2B">-</span></div>
+        <div class="res-item"><span>Distance 1 (GC):</span> <span class="res-val" id="res_d1">-</span></div>
+        <div class="res-item"><span>Distance 2 (Parallel):</span> <span class="res-val" id="res_d2">-</span></div>
+        <div class="res-item"><span>Distance 3 (GC):</span> <span class="res-val" id="res_d3">-</span></div>
+        <div class="res-item"><span>Long V₁ (Vertex 1):</span> <span class="res-val" id="res_v1">-</span></div>
+        <div class="res-item"><span>Long V₂ (Vertex 2):</span> <span class="res-val" id="res_v2">-</span></div>
+    </div>
+</div>
+
+<script>
+const toRad = deg => deg * Math.PI / 180;
+const toDeg = rad => rad * 180 / Math.PI;
+
+function showError(msg) {
+    const err = document.getElementById('error');
+    err.innerText = msg;
+    err.style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+}
+
+function clearData() {
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => input.value = "");
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+}
+
+function formatDMS(deg, type) {
+    let val = deg;
+    if (type === "lon") {
+        if (val > 180) val -= 360;
+        if (val < -180) val += 360;
+    }
+    let absVal = Math.abs(val);
+    let d = Math.floor(absVal);
+    let m = ((absVal - d) * 60).toFixed(1);
+    let dir = (type === "lon") ? (val >= 0 ? "E" : "W") : (val >= 0 ? "N" : "S");
+    return `${String(d).padStart(3, '0')}° ${String(m).padStart(4, '0')}' ${dir}`;
+}
+
+function calculate() {
+    // Clean & Get Data
+    const getData = (dId, mId, sId) => {
+        let d = parseFloat(document.getElementById(dId).value) || 0;
+        let m = parseFloat(document.getElementById(mId).value) || 0;
+        let s = parseInt(document.getElementById(sId).value);
+        return (Math.abs(d) + (m / 60)) * s;
+    };
+
+    const lat1 = getData('lat1_d', 'lat1_m', 'lat1_s');
+    const lon1 = getData('lon1_d', 'lon1_m', 'lon1_s');
+    const lat2 = getData('lat2_d', 'lat2_m', 'lat2_s');
+    const lon2 = getData('lon2_d', 'lon2_m', 'lon2_s');
+    const latL = getData('latLim_d', 'latLim_m', 'latLim_s');
+
+    // Validation
+    if (Math.abs(lat1) > 90 || Math.abs(lat2) > 90 || Math.abs(latL) > 90) return showError("ละติจูดต้องไม่เกิน 90 องศา");
+    if (Math.abs(latL) <= Math.abs(lat1) || Math.abs(latL) <= Math.abs(lat2)) return showError("Limit Lat ต้องอยู่สูงกว่า Lat เริ่มต้นและสิ้นสุด");
+
+    const rLat1 = toRad(lat1), rLat2 = toRad(lat2), rLatL = toRad(latL);
+    
+    let dloAB = lon2 - lon1;
+    if (dloAB > 180) dloAB -= 360;
+    if (dloAB < -180) dloAB += 360;
+
+    let dloAV1 = toDeg(Math.acos(Math.tan(Math.abs(rLat1)) / Math.tan(Math.abs(rLatL))));
+    let dloV2B = toDeg(Math.acos(Math.tan(Math.abs(rLat2)) / Math.tan(Math.abs(rLatL))));
+    let dloV1V2 = Math.abs(dloAB) - (dloAV1 + dloV2B);
+
+    if (dloV1V2 < 0) return showError("ระยะ Dlong สั้นเกินไปที่จะทำ Composite Sailing (ควรใช้ Great Circle ปกติ)");
+
+    // Course Calculation
+    let angleI = toDeg(Math.asin(Math.cos(rLatL) / Math.cos(rLat1)));
+    let nsI = (latL >= lat1) ? "N" : "S";
+    let ewI = (dloAB >= 0) ? "E" : "W";
+    let tcI = (nsI === "N" && ewI === "E") ? angleI : (nsI === "S" && ewI === "E") ? 180 - angleI : (nsI === "S" && ewI === "W") ? 180 + angleI : 360 - angleI;
+
+    let angleF = toDeg(Math.asin(Math.cos(rLatL) / Math.cos(rLat2)));
+    let nsF = (lat2 >= latL) ? "N" : "S";
+    let tcF = (nsF === "N" && ewI === "E") ? angleF : (nsF === "S" && ewI === "E") ? 180 - angleF : (nsF === "S" && ewI === "W") ? 180 + angleF : 360 - angleF;
+
+    const NM = 3437.746;
+    let dist1 = Math.acos(Math.sin(Math.abs(rLat1)) / Math.sin(Math.abs(rLatL))) * NM;
+    let dist2 = toRad(dloV1V2) * Math.cos(rLatL) * NM;
+    let dist3 = Math.acos(Math.sin(Math.abs(rLat2)) / Math.sin(Math.abs(rLatL))) * NM;
+
+    let lonV1 = lon1 + (dloAB >= 0 ? dloAV1 : -dloAV1);
+    let lonV2 = lon2 - (dloAB >= 0 ? dloV2B : -dloV2B);
+
+    // Show results
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('res_ic').innerHTML = `${tcI.toFixed(1)}° (T) <span class="quad-text">(${nsI} ${angleI.toFixed(1)}° ${ewI})</span>`;
+    document.getElementById('res_fc').innerHTML = `${tcF.toFixed(1)}° (T) <span class="quad-text">(${nsF} ${angleF.toFixed(1)}° ${ewI})</span>`;
+    document.getElementById('res_dloAB').innerText = Math.abs(dloAB).toFixed(2) + "°";
+    document.getElementById('res_dloAV1').innerText = dloAV1.toFixed(2) + "°";
+    document.getElementById('res_dloV1V2').innerText = dloV1V2.toFixed(2) + "°";
+    document.getElementById('res_dloV2B').innerText = dloV2B.toFixed(2) + "°";
+    document.getElementById('res_d1').innerText = dist1.toFixed(2) + " NM";
+    document.getElementById('res_d2').innerText = dist2.toFixed(2) + " NM";
+    document.getElementById('res_d3').innerText = dist3.toFixed(2) + " NM";
+    document.getElementById('res_v1').innerText = formatDMS(lonV1, "lon");
+    document.getElementById('res_v2').innerText = formatDMS(lonV2, "lon");
+}
+</script>
+</body>
+</html>
